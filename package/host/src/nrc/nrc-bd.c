@@ -35,6 +35,7 @@
 #define NRC_BD_HEADER_LENGTH	16
 char g_bd_buf[NRC_BD_FILE_MAX_LENGTH] = {0, };
 int g_bd_size=0;
+extern bool ignore_reg_for_tx_power;
 
 enum {
 	CC_US=1,
@@ -679,7 +680,7 @@ struct wim_bd_param * nrc_read_bd_tx_pwr(struct nrc *nw, uint8_t *country_code)
 	for(i = 0; i < bd->num_data_groups; i++)
 	{
 		type = bd->data[len + 4*i];
-		//nrc_dbg(NRC_DBG_STATE, "type : %u, cc_index: %u",type, cc_index);
+		nrc_dbg(NRC_DBG_STATE, "type : %u, cc_index: %u",type, cc_index);
 		if(type == cc_index) {
 			// copy data for specific country code
 			//nrc_dbg(NRC_DBG_STATE, "cc_index is matched(%u : %u)",type, cc_index);
@@ -689,7 +690,7 @@ struct wim_bd_param * nrc_read_bd_tx_pwr(struct nrc *nw, uint8_t *country_code)
 					(bd->data[7 + len + 4*i]<<8));
 
 			// Add a condition if target version is initial value(65535)
-			if(target_version == bd_sel->hw_version) {
+			if(ignore_reg_for_tx_power || target_version == bd_sel->hw_version) {
 				nrc_dbg(NRC_DBG_STATE, "target version is matched(%u : %u)",
 						target_version, bd_sel->hw_version);
 

@@ -19,7 +19,7 @@
 
 #define NRC_BD_MAX_CH_LIST		45
 
-#define BD_DEBUG	0
+#define BD_DEBUG	1
 
 struct BDF {
 	uint8_t	ver_major;

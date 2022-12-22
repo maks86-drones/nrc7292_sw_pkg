@@ -48,6 +48,13 @@ MODULE_PARM_DESC(bd_name, "Board Data file name");
 #endif /* defined(CONFIG_SUPPORT_BD) */
 
 /**
+ * 
+ */
+bool ignore_reg_for_tx_power = true;
+module_param(ignore_reg_for_tx_power, 0600, 0600);
+MODULE_PARM_DESC(ignore_reg_for_tx_power, "Ignore requlatory domain when setting tx power");
+
+/**
  * default port name
  */
 #if defined(CONFIG_ARM)
