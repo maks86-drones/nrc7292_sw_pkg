@@ -1,16 +1,16 @@
 ##############################################################################################
 # File /home/pi/nrc_pkg/etc/dhcpcd/dhcpcd.conf
-# Lines for IP for wlan0, wlan1 and eth0 should be fixed for "sed" command.
+# Lines for IP for wlan1, wlan1 and eth0 should be fixed for "sed" command.
 # Do NOT move them into another line
-#  - Line 59 ~ 62 for wlan0
+#  - Line 59 ~ 62 for wlan1
 #  - Line 65 ~ 68 for wlan1
 #  - Line 71 ~ 72 for eth0
 #
 # File /home/pi/nrc_pkg/etc/dnsmaq/dnsmasq.conf
-# Lines for IP config for wlan0, wlan1 and eth0 should be fixed for "sed" command.
+# Lines for IP config for wlan1, wlan1 and eth0 should be fixed for "sed" command.
 # Do NOT move them into another line
 #  - Line 1 ~ 2 for eth0
-#  - Line 3 ~ 4 for wlan0 or wlan1
+#  - Line 3 ~ 4 for wlan1 or wlan1
 ##############################################################################################
 
 ##############################################################################################

@@ -14,10 +14,10 @@ def BtnPressedEvent(c):
     global air_plane_status
 
     if (air_plane_status == "off"):
-        cmd = "sudo ifconfig wlan0 down"
+        cmd = "sudo ifconfig wlan1 down"
         air_plane_status = "on"
     else:
-        cmd = "sudo ifconfig wlan0 up"
+        cmd = "sudo ifconfig wlan1 up"
         air_plane_status = "off"
 
     print("AirPlane Button Pressed : " + cmd)

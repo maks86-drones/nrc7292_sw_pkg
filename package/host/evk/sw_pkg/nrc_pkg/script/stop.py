@@ -14,9 +14,9 @@ def stopNAT():
 print("STOP")
 
 print("[0] Stop applications")
-removeBridgeMeshAP("wlan0", "wlan1")
+removeBridgeMeshAP("wlan1", "wlan1")
 os.system("sudo hostapd_cli disable 2>/dev/null")
-os.system("sudo wpa_cli disable wlan0 2>/dev/null")
+os.system("sudo wpa_cli disable wlan1 2>/dev/null")
 os.system("sudo killall -9 wpa_supplicant 2>/dev/null")
 os.system("sudo killall -9 hostapd 2>/dev/null")
 os.system("sudo killall -9 wireshark-gtk 2>/dev/null")

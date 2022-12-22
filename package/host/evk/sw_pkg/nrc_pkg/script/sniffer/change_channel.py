@@ -6,7 +6,7 @@ import time
 import commands
  
 def change_channel():
-	cmdstr = "sudo iw dev wlan0 set channel " + str(sys.argv[1])
+	cmdstr = "sudo iw dev wlan1 set channel " + str(sys.argv[1])
 	os.system(cmdstr)
 
 total = len(sys.argv)

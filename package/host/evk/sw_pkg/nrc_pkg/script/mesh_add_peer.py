@@ -13,7 +13,7 @@ def isMacAddress(s):
 
 def usage_print():
     print("Usage: mesh_add_peer.py [Interface] [Peer MAC address] \
-          \nExample: ./mesh_add_peer.py wlan0 8c:0f:fa:00:2b:3c")
+          \nExample: ./mesh_add_peer.py wlan1 8c:0f:fa:00:2b:3c")
     exit()
 
 def addPeer(interface, mac):

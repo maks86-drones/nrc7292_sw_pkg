@@ -54,7 +54,7 @@ def stopMeshNAT():
 
 def addMeshInterface(interface):
     print("[*] Create " + interface + " for concurrent mode")
-    os.system("sudo iw dev wlan0 interface add " + interface + " type managed")
+    os.system("sudo iw dev wlan1 interface add " + interface + " type managed")
     os.system("sudo ifconfig " + interface + " up")
 
 def run_mp(interface, country, security, debug, peermac, ip):

@@ -62,7 +62,7 @@ cleanup() {
 	#break bridge
 	if is_interface br0; then
 		sudo ifconfig br0 down > /dev/null 2>&1
-		sudo brctl delif br0 wlan0  > /dev/null 2>&1
+		sudo brctl delif br0 wlan1  > /dev/null 2>&1
 		sudo brctl delif br0 wlan1 > /dev/null 2>&1
 		sudo brctl delbr br0 > /dev/null 2>&1
 	fi
@@ -498,11 +498,11 @@ do_work() {
 if [ "$MODE" == "wds" ]; then
 	echo "wds"
 elif [ "$MODE" == "tree" ]; then
-	sudo hostapd_cli -iwlan0 status
+	sudo hostapd_cli -iwlan1 status
 	sudo wpa_cli -iwlan1 status
 elif [ "$MODE" == "mp" ]; then
 	if [[ $USE_MP_ADDR -eq 1 ]]; then
-		sudo wpa_cli -i wlan0 mesh_peer_add ${MP_ADDR} >> /dev/null 2>&1
+		sudo wpa_cli -i wlan1 mesh_peer_add ${MP_ADDR} >> /dev/null 2>&1
 	fi
 fi
 }
@@ -590,11 +590,11 @@ while :; do
 done
 
 if [ "$MODE" == "map" ]; then
-	run_map wlan0 wlan1
+	run_map wlan1 wlan1
 elif [ "$MODE" == "mp" ]; then
-	run_mp wlan0
+	run_mp wlan1
 elif [ "$MODE" == "mpp" ]; then
-	run_mpp wlan0 eth0
+	run_mpp wlan1 eth0
 else
 	exit 1
 fi

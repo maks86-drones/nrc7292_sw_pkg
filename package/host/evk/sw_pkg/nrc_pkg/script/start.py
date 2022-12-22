@@ -85,7 +85,7 @@ ndp_preq          = 0        # 0 (Legacy Probe Req) 1 (NDP Probe Req)
 cqm_enable        = 1        # 0 (disable) or 1 (enable)
 #--------------------------------------------------------------------------------#
 # RELAY (Do NOT use! it will be deprecated)
-relay_type        = 1        # 0 (wlan0: STA, wlan1: AP) 1 (wlan0: AP, wlan1: STA)
+relay_type        = 1        # 0 (wlan1: STA, wlan1: AP) 1 (wlan1: AP, wlan1: STA)
 #--------------------------------------------------------------------------------#
 # Power Save (STA Only)
 #  4-types PS: (0)Always on (1)Modem_Sleep (2)Deep_Sleep(TIM) (3)Deep_Sleep(nonTIM
@@ -127,7 +127,7 @@ bitmap_encoding   = 1         # 0 (disable) or 1 (enable)
 # User scrambler reversely (NRC7292 only)
 reverse_scrambler = 1         # 0 (disable) or 1 (enable)
 #--------------------------------------------------------------------------------#
-# Use bridge setup with br0, wlan0, eth(n) (AP & STA)
+# Use bridge setup with br0, wlan1, eth(n) (AP & STA)
 use_bridge_setup = 0         # 0 (not use bridge setup) or n (use bridge setup with eth(n-1))
 ##################################################################################
 
@@ -328,8 +328,8 @@ def copyConf():
 def startNAT():
     os.system('sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"')
     os.system("sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE")
-    os.system("sudo iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT")
-    os.system("sudo iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT")
+    os.system("sudo iptables -A FORWARD -i eth0 -o wlan1 -m state --state RELATED,ESTABLISHED -j ACCEPT")
+    os.system("sudo iptables -A FORWARD -i wlan1 -o eth0 -j ACCEPT")
 
 def stopNAT():
     os.system('sudo sh -c "echo 0 > /proc/sys/net/ipv4/ip_forward"')
@@ -351,7 +351,7 @@ def stopDNSMASQ():
 def addWLANInterface(interface):
     if strSTA() == 'RELAY' and interface == "wlan1":
         print("[*] Create wlan1 for concurrent mode")
-        os.system("sudo iw dev wlan0 interface add wlan1 type managed")
+        os.system("sudo iw dev wlan1 interface add wlan1 type managed")
         os.system("sudo ifconfig wlan1 up")
         time.sleep(3)
 
@@ -576,7 +576,7 @@ def run_common():
 
     print("[0] Clear")
     os.system("sudo hostapd_cli disable 2>/dev/null")
-    os.system("sudo wpa_cli disable wlan0 2>/dev/null ")
+    os.system("sudo wpa_cli disable wlan1 2>/dev/null ")
     os.system("sudo wpa_cli disable wlan1 2>/dev/null")
     os.system("sudo killall -9 wpa_supplicant 2>/dev/null")
     os.system("sudo killall -9 hostapd 2>/dev/null")
@@ -610,7 +610,7 @@ def run_common():
     elif strSTA() == 'MESH' and int(relay_type) == 2:
         addMeshInterface('mesh0')
 
-    ret = subprocess.call(["sudo", "ifconfig", "wlan0", "up"])
+    ret = subprocess.call(["sudo", "ifconfig", "wlan1", "up"])
     if ret == 255:
         os.system('sudo rmmod nrc.ko')
         sys.exit()
@@ -633,7 +633,7 @@ def run_sta(interface):
         bridge = '-b br0 '
         eth = 'eth' + str(int(use_bridge_setup) - 1)
         print('[*] STA bridge configuration')
-        os.system('sudo brctl addbr br0; sudo ifconfig {e} up; sudo ifconfig wlan0 0.0.0.0; sudo ifconfig {e} 0.0.0.0; sudo iw wlan0 set 4addr on; sudo brctl addif br0 wlan0; sudo brctl addif br0 {e}; sudo ifconfig br0 up'.format(e=eth))
+        os.system('sudo brctl addbr br0; sudo ifconfig {e} up; sudo ifconfig wlan1 0.0.0.0; sudo ifconfig {e} 0.0.0.0; sudo iw wlan1 set 4addr on; sudo brctl addif br0 wlan1; sudo brctl addif br0 {e}; sudo ifconfig br0 up'.format(e=eth))
         os.system('sudo brctl show')
     else:
         bridge = ''
@@ -752,7 +752,7 @@ def run_ap(interface):
     if strSTA() == 'AP' and int(use_bridge_setup) > 0:
         print('[*] AP bridge configuration')
         eth = 'eth' + str(int(use_bridge_setup) - 1)
-        os.system('sudo ifconfig {e} up; sudo ifconfig wlan0 0.0.0.0; sudo ifconfig {e} 0.0.0.0; sudo brctl addif br0 {e}; sudo ifconfig br0 up; sudo dhclient br0 -v '.format(e=eth))
+        os.system('sudo ifconfig {e} up; sudo ifconfig wlan1 0.0.0.0; sudo ifconfig {e} 0.0.0.0; sudo brctl addif br0 {e}; sudo ifconfig br0 up; sudo dhclient br0 -v '.format(e=eth))
         os.system('sudo brctl show')
         time.sleep(3)
 
@@ -771,18 +771,18 @@ def run_ap(interface):
 def run_sniffer():
     print("[6] Setting Monitor Mode")
     time.sleep(3)
-    os.system('sudo ifconfig wlan0 down; sudo iw dev wlan0 set type monitor; sudo ifconfig wlan0 up')
+    os.system('sudo ifconfig wlan1 down; sudo iw dev wlan1 set type monitor; sudo ifconfig wlan1 up')
     print("[7] Setting Country: " + strOriCountry())
     os.system("sudo iw reg set " + strOriCountry())
     time.sleep(3)
     print("[8] Setting Channel: " + str(sys.argv[4]))
-    os.system("sudo iw dev wlan0 set channel " + str(sys.argv[4]))
+    os.system("sudo iw dev wlan1 set channel " + str(sys.argv[4]))
     time.sleep(3)
     print("[9] Start Sniffer")
     if strSnifferMode() == 'LOCAL':
-        os.system('sudo wireshark-gtk -i wlan0 -k -S -l &')
+        os.system('sudo wireshark-gtk -i wlan1 -k -S -l &')
     else:
-        os.system('gksudo wireshark-gtk -i wlan0 -k -S -l &')
+        os.system('gksudo wireshark-gtk -i wlan1 -k -S -l &')
     print("HaLow SNIFFER ready")
     print("--------------------------------------------------------------------")
 
@@ -803,27 +803,27 @@ if __name__ == '__main__':
     run_common()
 
     if strSTA() == 'STA':
-        run_sta('wlan0')
+        run_sta('wlan1')
     elif strSTA() == 'AP':
-        run_ap('wlan0')
+        run_ap('wlan1')
     elif strSTA() == 'SNIFFER':
         run_sniffer()
     elif strSTA() == 'RELAY':
         #start STA and then AP for Relay
         if int(relay_type) == 0:
-            run_sta('wlan0')
+            run_sta('wlan1')
             run_ap('wlan1')
         else:
             addWLANInterface('wlan1')
             run_sta('wlan1')
-            run_ap('wlan0')
+            run_ap('wlan1')
     elif strSTA() == 'MESH':
         if strMeshMode() == 'Mesh Portal':
-            run_mpp('wlan0', str(sys.argv[3]), strSecurity(), supplicant_debug, peer, static_ip)
+            run_mpp('wlan1', str(sys.argv[3]), strSecurity(), supplicant_debug, peer, static_ip)
         elif strMeshMode() == 'Mesh Point':
-            run_mp('wlan0', str(sys.argv[3]), strSecurity(), supplicant_debug, peer, static_ip)
+            run_mp('wlan1', str(sys.argv[3]), strSecurity(), supplicant_debug, peer, static_ip)
         elif strMeshMode() == 'Mesh AP':
-            run_map('wlan0', 'mesh0', str(sys.argv[3]), strSecurity(), supplicant_debug, peer, static_ip)
+            run_map('wlan1', 'mesh0', str(sys.argv[3]), strSecurity(), supplicant_debug, peer, static_ip)
         else:
             usage_print()
     else:

@@ -51,7 +51,7 @@ cleanup() {
 	#break bridge
 	if is_interface br0; then
 		sudo ifconfig br0 down > /dev/null 2>&1
-		sudo brctl delif br0 wlan0  > /dev/null 2>&1
+		sudo brctl delif br0 wlan1  > /dev/null 2>&1
 		sudo brctl delif br0 wlan1 > /dev/null 2>&1
 		sudo brctl delbr br0 > /dev/null 2>&1
 	fi
@@ -132,7 +132,7 @@ wait_for_intf() {
 }
 
 enable_drv() {
-	local ifname=wlan0
+	local ifname=wlan1
 	sudo cp /home/pi/nrc_pkg/sw/firmware/nrc7292_cspi.bin /lib/firmware/uni_s1g.bin
 	sudo insmod /home/pi/nrc_pkg/sw/driver/nrc.ko fw_name=uni_s1g.bin hifspeed=10000000
 	wait_for_intf $ifname
@@ -144,7 +144,7 @@ enable_drv() {
 
 # Enable conc interface
 enable_conc_intf() {
-	sudo iw dev wlan0 interface add wlan1 type managed
+	sudo iw dev wlan1 interface add wlan1 type managed
 }
 
 # enable monitor interface
@@ -158,7 +158,7 @@ set_nat() {
 	sudo sysctl net.ipv6.ip_forward=1 >> /dev/null 2>&1
 	sudo iptables -F
 	sudo iptables -t nat -A POSTROUTING -o wlan1 -j MASQUERADE >> /dev/null 2>&1
-	sudo iptables -A FORWARD -i wlan0 -o wlan1 -m state --state RELATED,ESTABLISHED -j ACCEPT >> /dev/null 2>&1
+	sudo iptables -A FORWARD -i wlan1 -o wlan1 -m state --state RELATED,ESTABLISHED -j ACCEPT >> /dev/null 2>&1
 	sudo iptables -A FORWARD -i wlan1 -o wlan1 -j ACCEPT >> /dev/null 2>&1
 	sudo iptables -A INPUT -j ACCEPT >> /dev/null 2>&1
 	sudo iptables -A OUTPUT -j ACCEPT >> /dev/null 2>&1
@@ -173,12 +173,12 @@ set_forwarding() {
 }
 
 set_bridge() {
-	sudo iw dev wlan0 set 4addr on > /dev/null 2>&1
 	sudo iw dev wlan1 set 4addr on > /dev/null 2>&1
-	sudo ifconfig wlan0 0.0.0.0
+	sudo iw dev wlan1 set 4addr on > /dev/null 2>&1
+	sudo ifconfig wlan1 0.0.0.0
 	sudo ifconfig wlan1 0.0.0.0
 	sudo brctl addbr br0
-	sudo brctl addif br0 wlan0
+	sudo brctl addif br0 wlan1
 	sudo brctl addif br0 wlan1
 	sudo ifconfig br0 $IP_ADDR0
 }
@@ -211,7 +211,7 @@ hw_mode=a
 beacon_int=100
 channel=${CHANNEL}
 ieee80211n=1
-interface=wlan0
+interface=wlan1
 ap_max_inactivity=16779
 wmm_enabled=1
 wpa=2
@@ -241,13 +241,13 @@ run_mp() {
 	#enable_conc_intf
 	write_config_mp run0.conf
 	sudo chmod 755 run0.conf
-	sudo wpa_supplicant -iwlan0 -c run0.conf -dddd &
+	sudo wpa_supplicant -iwlan1 -c run0.conf -dddd &
 	sleep 10
 	if [[ $USE_MP_ADDR -eq 1 ]]; then
-		echo wpa_cli -i wlan0 mesh_peer_add ${MP_ADDR}
-		sudo wpa_cli -i wlan0 mesh_peer_add ${MP_ADDR}
+		echo wpa_cli -i wlan1 mesh_peer_add ${MP_ADDR}
+		sudo wpa_cli -i wlan1 mesh_peer_add ${MP_ADDR}
 	fi
-	sudo ifconfig wlan0 $IP_ADDR0
+	sudo ifconfig wlan1 $IP_ADDR0
 }
 
 run_map() {
@@ -255,7 +255,7 @@ run_map() {
 	enable_drv
 	enable_conc_intf
 	write_config_mp run0.conf
-	sudo wpa_supplicant -iwlan0 -c run0.conf -ddd &
+	sudo wpa_supplicant -iwlan1 -c run0.conf -ddd &
 	write_config_ap run1.conf
 	sudo hostapd run1.conf -ddd &
 	#sleep 4
@@ -267,12 +267,12 @@ do_work() {
 if [ "$MODE" == "wds" ]; then
 	echo "wds"
 elif [ "$MODE" == "tree" ]; then
-	sudo hostapd_cli -iwlan0 status
+	sudo hostapd_cli -iwlan1 status
 	sudo wpa_cli -iwlan1 status
 
 elif [ "$MODE" == "mp" ]; then
 	if [[ $USE_MP_ADDR -eq 1 ]]; then
-		sudo wpa_cli -i wlan0 mesh_peer_add ${MP_ADDR} >> /dev/null 2>&1
+		sudo wpa_cli -i wlan1 mesh_peer_add ${MP_ADDR} >> /dev/null 2>&1
 	fi
 else
 	echo "..."
